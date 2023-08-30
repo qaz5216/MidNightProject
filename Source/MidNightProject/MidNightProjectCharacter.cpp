@@ -10,6 +10,9 @@
 #include "instrument.h"
 #include "ChatWidget.h"
 #include <UMG/Public/Components/TextBlock.h>
+#include "Kismet/GameplayStatics.h"
+#include "HttpRequestActor.h"
+#include "Components/EditableText.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,6 +57,8 @@ void AMidNightProjectCharacter::BeginPlay()
 		}
 	}
 
+	instrument = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, Ainstrument::StaticClass()));
+	httpReqActor = Cast<AHttpRequestActor>(UGameplayStatics::GetActorOfClass(this, AHttpRequestActor::StaticClass()));
 }
 
 void AMidNightProjectCharacter::Tick(float DeltaSeconds)
@@ -161,6 +166,7 @@ void AMidNightProjectCharacter::Enter()
 {
 	if (!bSearching)
 	{	
+		GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Yellow, FString::Printf(TEXT("if")));
 		APlayerController* PlayerC=Cast<APlayerController>(Controller);
 		if (PlayerC!=nullptr)
 		{
@@ -174,12 +180,19 @@ void AMidNightProjectCharacter::Enter()
 		//서버에 edit_text에 있는 텍스트를 보낸다.
 		//Chat_UI->text_edit->
 		APlayerController* PlayerC = Cast<APlayerController>(Controller);
-		if (PlayerC != nullptr)
+		GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Yellow, FString::Printf(TEXT("else")));
+		if (PlayerC != nullptr && httpReqActor)
 		{
-			
+			GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Yellow, FString::Printf(TEXT("Inif")));
 			PlayerC->SetInputMode(FInputModeGameAndUI());
 			PlayerC->SetShowMouseCursor(false);
 			bSearching = false;
+
+			FString fullPath = serverurl + "/answer" + "?id=" + FText::AsNumber(instrument->id).ToString() + "&content=" + Chat_UI->Etext_Q->GetText().ToString();
+
+
+			httpReqActor->PostRequset(fullPath);
+			
 		}
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Enter"));

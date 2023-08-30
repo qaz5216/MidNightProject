@@ -109,6 +109,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Enter();
 
+	UPROPERTY()
+	class AHttpRequestActor* httpReqActor;
+
+	class Ainstrument* instrument;
+
+	FString serverurl = "http://192.168.1.14:8000";
+
 	
 };
 

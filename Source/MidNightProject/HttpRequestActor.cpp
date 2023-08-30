@@ -7,6 +7,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "instrument.h"
 #include "MidNightProjectCharacter.h"
+#include "ChatWidget.h"
+#include "Components/EditableText.h"
+#include "Components/TextBlock.h"
 // Sets default values
 AHttpRequestActor::AHttpRequestActor()
 {
@@ -20,8 +23,8 @@ void AHttpRequestActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	/*instrument = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, &Ainstrument::StaticClass()));
-	player = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, &AMidNightProjectCharacter::StaticClass()));*/
+	instrument = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, Ainstrument::StaticClass()));
+	player = Cast<AMidNightProjectCharacter>(UGameplayStatics::GetActorOfClass(this, AMidNightProjectCharacter::StaticClass()));
 }
 
 // Called every frame
@@ -38,12 +41,13 @@ void AHttpRequestActor::PostRequset(const FString url)
 	//studentData.Add("Age", "30");
 	//studentData.Add("Height", "172");
 	
-	
+	GEngine->AddOnScreenDebugMessage(-1, 3.0, FColor::Yellow, FString::Printf(TEXT("PostRequset URL")));
+	GEngine->AddOnScreenDebugMessage(-1, 3.0, FColor::Yellow, url);
 
-	//chatData.Add("id", instrument->id);
-	//chatData.Add("text",  player->Chat_UI->text_Answer->GetText());
+	chatData.Add("id", FText::AsNumber(instrument->id).ToString());
+	chatData.Add("content",  player->Chat_UI->Etext_Q->GetText().ToString());
 
-	//FString chatJsonData = UJsonParseLibrary::MakeJson(chatData);
+	FString chatJsonData = UJsonParseLibrary::MakeJson(chatData);
 
 
 	//모듈을 생성하고, request 인스턴스를 생성한다.
@@ -53,7 +57,7 @@ void AHttpRequestActor::PostRequset(const FString url)
 	req->SetURL(url);
 	req->SetVerb(TEXT("POST"));
 	req->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
-	//req->SetContentAsString(chatJsonData);
+	req->SetContentAsString(chatJsonData);
 	req->OnProcessRequestComplete().BindUObject(this, &AHttpRequestActor::OnPostData);
 	req->ProcessRequest();
 }
@@ -62,16 +66,22 @@ void AHttpRequestActor::OnPostData(FHttpRequestPtr Request, FHttpResponsePtr Res
 {
 	if (bConnectedSuccessfully)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Red, FString::Printf(TEXT("OnPostData Success")));
+
 		FString receivedData = Response->GetContentAsString();
 
 		//FJsonSerializer::Deserialize();
 		//받은 데이터를 화면에 출력한다.
 		//gm->SetLogText(receivedData);
 
+		FString parsedData = UJsonParseLibrary::JsonParse(receivedData);
+		player->Chat_UI->text_Answer->SetText(FText::FromString(parsedData));
 		
 	}
 
 	else {
+
+		GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Red, FString::Printf(TEXT("OnPostData Fail")));
 
 		// 요청 전송 상태 확인
 		EHttpRequestStatus::Type status = Request->GetStatus();
@@ -96,5 +106,6 @@ void AHttpRequestActor::OnPostData(FHttpRequestPtr Request, FHttpResponsePtr Res
 	}
 	//응답 코드 확인
 	int32 responseCode = Response->GetResponseCode();
+	//player->Chat_UI->text_Answer->SetText(FText::AsNumber(responseCode));
 	//gm->SetLogText(FString::Printf(TEXT("Response Code : %d"), responseCode));
 }
