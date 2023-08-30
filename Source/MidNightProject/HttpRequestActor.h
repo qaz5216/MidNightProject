@@ -28,4 +28,7 @@ public:
 	void PostRequset(const FString url);
 	
 	void OnPostData(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+
+	class Ainstrument* instrument;
+	class AMidNightProjectCharacter* player;
 };

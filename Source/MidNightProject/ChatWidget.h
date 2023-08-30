@@ -16,6 +16,10 @@ class MIDNIGHTPROJECT_API UChatWidget : public UUserWidget
 public:
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = info)
 	class UTextBlock* text_id;
+	
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = info)
+	class UEditableText* Etext_Q;
+	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = info)
 	class UTextBlock* text_Answer;
 };

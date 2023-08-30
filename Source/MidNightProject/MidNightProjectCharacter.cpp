@@ -172,6 +172,7 @@ void AMidNightProjectCharacter::Enter()
 	else
 	{
 		//서버에 edit_text에 있는 텍스트를 보낸다.
+		//Chat_UI->text_edit->
 		APlayerController* PlayerC = Cast<APlayerController>(Controller);
 		if (PlayerC != nullptr)
 		{
