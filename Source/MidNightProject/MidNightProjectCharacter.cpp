@@ -10,6 +10,8 @@
 #include "instrument.h"
 #include "ChatWidget.h"
 #include <UMG/Public/Components/TextBlock.h>
+#include <Components/AudioComponent.h>
+#include <Kismet/GameplayStatics.h>
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -44,7 +46,6 @@ void AMidNightProjectCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -52,6 +53,14 @@ void AMidNightProjectCharacter::BeginPlay()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
+	}
+	bSoundkill=false;
+	bSoundMake=false;
+	if (BGSound!=nullptr)
+	{
+		SoundPlayer = UGameplayStatics::CreateSound2D(GetWorld(), BGSound);
+		SoundPlayer->Play();
+		StartSound();
 	}
 
 }
@@ -82,12 +91,53 @@ void AMidNightProjectCharacter::Tick(float DeltaSeconds)
 				UE_LOG(LogTemp, Warning, TEXT("Id=%d"), Hitinstrument->id);
 				UE_LOG(LogTemp, Warning, TEXT("%s"), *Hitinstrument->infoString);
 			}
+			if (!bSoundkill && !bSoundMake)
+			{
+				StopSound();
+			}
 		}
 		else
 		{
 			Targetinstrument=nullptr;
 			bUishow=false;
 			DetachUI();
+			if (!bSoundkill && !bSoundMake)
+			{
+				StopSound();
+			}
+		}
+	}
+	if (bSoundkill)
+	{
+		SoundKillTime+=DeltaSeconds;
+		VolumeSound(1-(SoundKillTime/2));
+		if (SoundKillTime>2)
+		{
+			VolumeSound(0);
+			bSoundkill=false;
+			SoundKillTime=0;
+			SoundPlayer->Stop();
+			if (Targetinstrument!=nullptr&&Targetinstrument->instrumentSound!=nullptr)
+			{	
+				SoundPlayer = UGameplayStatics::CreateSound2D(GetWorld(), Targetinstrument->instrumentSound);
+			}
+			else
+			{
+				SoundPlayer = UGameplayStatics::CreateSound2D(GetWorld(), BGSound);
+			}
+			SoundPlayer->Play();
+			StartSound();
+		}
+	}
+	if (bSoundMake)
+	{
+		SoundMakeTime+=DeltaSeconds;
+		VolumeSound((SoundMakeTime / 2));
+		if (SoundMakeTime>2)
+		{
+			VolumeSound(1);
+			bSoundMake=false;
+			SoundMakeTime=0;
 		}
 	}
 }
@@ -183,6 +233,23 @@ void AMidNightProjectCharacter::Enter()
 		}
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Enter"));
+}
+
+void AMidNightProjectCharacter::StartSound()
+{
+	SoundMakeTime=0;
+	bSoundMake = true;
+}
+
+void AMidNightProjectCharacter::StopSound()
+{
+	SoundKillTime=0;
+	bSoundkill=true;
+}
+
+void AMidNightProjectCharacter::VolumeSound(float Value)
+{
+	SoundPlayer->SetVolumeMultiplier(Value);
 }
 
 void AMidNightProjectCharacter::Move(const FInputActionValue& Value)

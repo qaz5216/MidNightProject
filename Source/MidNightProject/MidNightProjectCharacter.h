@@ -108,7 +108,23 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Enter();
-
+	UFUNCTION(BlueprintCallable)
+	void StartSound();
+	UFUNCTION(BlueprintCallable)
+	void StopSound();
 	
+	UFUNCTION(BlueprintCallable)
+	void VolumeSound(float Value);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
+	USoundBase* BGSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
+	UAudioComponent* SoundPlayer;
+	float SoundMakeTime=0;
+	float SoundKillTime=0;
+	float SoundVolume=0;
+	bool bSoundkill=false;
+	bool bSoundMake=false;
 };
 
