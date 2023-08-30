@@ -126,5 +126,13 @@ public:
 	float SoundVolume=0;
 	bool bSoundkill=false;
 	bool bSoundMake=false;
+
+	UPROPERTY()
+   class AHttpRequestActor* httpReqActor;
+
+   class Ainstrument* instrument;
+
+   FString serverurl = "http://192.168.1.14:8000";
+
 };
 
