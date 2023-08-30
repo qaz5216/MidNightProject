@@ -53,6 +53,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* EnterAction;
+
+
 	/** Bool for AnimBP to switch to another animation set */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	bool bHasRifle;
@@ -83,7 +87,28 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=UI)
+	TSubclassOf<class UChatWidget> Chat_Widget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=UI)
+	class UChatWidget* Chat_UI;
+	UPROPERTY()
+	bool bUishow=false;
 
+	UPROPERTY()
+	bool bSearching=false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=UI)
+	class Ainstrument* Targetinstrument;
+
+	UFUNCTION(BlueprintCallable)
+	void AttachUI();
+
+	UFUNCTION(BlueprintCallable)
+	void DetachUI();
+
+	UFUNCTION(BlueprintCallable)
+	void Enter();
+
+	
 };
 

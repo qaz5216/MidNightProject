@@ -8,6 +8,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "instrument.h"
+#include "ChatWidget.h"
+#include <UMG/Public/Components/TextBlock.h>
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -67,12 +69,25 @@ void AMidNightProjectCharacter::Tick(float DeltaSeconds)
 		Ainstrument* Hitinstrument=Cast<Ainstrument>(HitActor);
 		if (Hitinstrument!=nullptr)
 		{
-			UE_LOG(LogTemp,Warning,TEXT("Id=%d"),Hitinstrument->id);
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *Hitinstrument->infoString);
+			if (Targetinstrument!=Hitinstrument)
+			{
+				bUishow = false;
+				DetachUI();
+				Targetinstrument=Hitinstrument;
+			}
+			if (!bUishow)
+			{
+				bUishow = true;
+				AttachUI();
+				UE_LOG(LogTemp, Warning, TEXT("Id=%d"), Hitinstrument->id);
+				UE_LOG(LogTemp, Warning, TEXT("%s"), *Hitinstrument->infoString);
+			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("InstrumentFalse"));
+			Targetinstrument=nullptr;
+			bUishow=false;
+			DetachUI();
 		}
 	}
 }
@@ -93,9 +108,81 @@ void AMidNightProjectCharacter::SetupPlayerInputComponent(class UInputComponent*
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMidNightProjectCharacter::Look);
+
+		//Enter
+		EnhancedInputComponent->BindAction(EnterAction, ETriggerEvent::Triggered, this, &AMidNightProjectCharacter::Enter);
 	}
 }
 
+
+void AMidNightProjectCharacter::AttachUI()
+{
+	if (Chat_Widget != nullptr)
+	{
+		Chat_UI = CreateWidget<UChatWidget>(GetWorld(), Chat_Widget);
+		if (Chat_UI!=nullptr)
+		{
+			Chat_UI->text_id->SetText(FText::AsNumber(Targetinstrument->id));
+			Chat_UI->AddToViewport();
+			UE_LOG(LogTemp, Warning, TEXT("UIAttach"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UINullzz"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("WidgetNullzz"));
+	}
+}
+
+void AMidNightProjectCharacter::DetachUI()
+{
+	if (Chat_UI!=nullptr)
+	{
+		Chat_UI->RemoveFromParent();
+		APlayerController* PlayerC = Cast<APlayerController>(Controller);
+		if (PlayerC != nullptr)
+		{
+			PlayerC->SetInputMode(FInputModeGameOnly());
+			PlayerC->SetShowMouseCursor(false);
+			bSearching = false;
+		}
+		UE_LOG(LogTemp, Warning, TEXT("UIDetach"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UINullzzdetach"));
+	}
+}
+
+void AMidNightProjectCharacter::Enter()
+{
+	if (!bSearching)
+	{	
+		APlayerController* PlayerC=Cast<APlayerController>(Controller);
+		if (PlayerC!=nullptr)
+		{
+			
+			PlayerC->SetShowMouseCursor(true);
+			bSearching = true;
+		}
+	}
+	else
+	{
+		//서버에 edit_text에 있는 텍스트를 보낸다.
+		APlayerController* PlayerC = Cast<APlayerController>(Controller);
+		if (PlayerC != nullptr)
+		{
+			
+			PlayerC->SetInputMode(FInputModeGameAndUI());
+			PlayerC->SetShowMouseCursor(false);
+			bSearching = false;
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Enter"));
+}
 
 void AMidNightProjectCharacter::Move(const FInputActionValue& Value)
 {
@@ -113,13 +200,16 @@ void AMidNightProjectCharacter::Move(const FInputActionValue& Value)
 void AMidNightProjectCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
+	if (!bSearching)
 	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+		if (Controller != nullptr)
+		{
+			// add yaw and pitch input to controller
+			AddControllerYawInput(LookAxisVector.X);
+			AddControllerPitchInput(LookAxisVector.Y);
+		}
 	}
 }
 
