@@ -29,5 +29,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
 	FString infoString="";
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
+	UStaticMeshComponent* MeshComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
+	USoundBase* instrumentSound;
 
 };
