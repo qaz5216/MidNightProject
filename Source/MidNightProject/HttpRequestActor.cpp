@@ -6,7 +6,7 @@
 #include "JsonParseLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "instrument.h"
-
+#include "MidNightProjectCharacter.h"
 // Sets default values
 AHttpRequestActor::AHttpRequestActor()
 {
@@ -20,8 +20,8 @@ void AHttpRequestActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	instrument = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, &Ainstrument::StaticClass()));
-	player = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, &AMidNightProjectCharacter::StaticClass()));
+	/*instrument = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, &Ainstrument::StaticClass()));
+	player = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, &AMidNightProjectCharacter::StaticClass()));*/
 }
 
 // Called every frame
@@ -40,8 +40,8 @@ void AHttpRequestActor::PostRequset(const FString url)
 	
 	
 
-	chatData.Add("id", instrument->id);
-	chatData.Add("text",  player->Chat_UI->text_Answer->GetText());
+	//chatData.Add("id", instrument->id);
+	//chatData.Add("text",  player->Chat_UI->text_Answer->GetText());
 
 	//FString chatJsonData = UJsonParseLibrary::MakeJson(chatData);
 
