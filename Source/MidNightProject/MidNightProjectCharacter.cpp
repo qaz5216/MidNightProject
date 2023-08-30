@@ -175,6 +175,7 @@ void AMidNightProjectCharacter::AttachUI()
 		if (Chat_UI!=nullptr)
 		{
 			Chat_UI->text_id->SetText(FText::AsNumber(Targetinstrument->id));
+			Chat_UI->text_Answer->SetVisibility(ESlateVisibility::Hidden);
 			Chat_UI->AddToViewport();
 			UE_LOG(LogTemp, Warning, TEXT("UIAttach"));
 		}
@@ -236,7 +237,8 @@ void AMidNightProjectCharacter::Enter()
 
 			FString fullPath = serverurl + "/answer" + "?id=" + FText::AsNumber(instrument->id).ToString() + "&content=" + Chat_UI->Etext_Q->GetText().ToString();
 
-
+			
+			Chat_UI->text_waiting->SetVisibility(ESlateVisibility::Visible);
 			httpReqActor->PostRequset(fullPath);
 
 		}

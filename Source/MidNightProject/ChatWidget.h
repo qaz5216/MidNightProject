@@ -23,5 +23,8 @@ public:
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = info)
 	class UTextBlock* text_Answer;
 
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = info)
+	class UTextBlock* text_waiting;
+
 	
 };

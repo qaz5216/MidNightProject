@@ -76,7 +76,8 @@ void AHttpRequestActor::OnPostData(FHttpRequestPtr Request, FHttpResponsePtr Res
 
 		FString parsedData = UJsonParseLibrary::JsonParse(receivedData);
 		player->Chat_UI->text_Answer->SetText(FText::FromString(parsedData));
-		
+		player->Chat_UI->text_waiting->SetVisibility(ESlateVisibility::Hidden);
+		player->Chat_UI->text_Answer->SetVisibility(ESlateVisibility::Visible);
 	}
 
 	else {
