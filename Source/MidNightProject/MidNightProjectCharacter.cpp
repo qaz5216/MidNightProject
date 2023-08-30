@@ -122,10 +122,14 @@ void AMidNightProjectCharacter::Tick(float DeltaSeconds)
 			if (Targetinstrument!=nullptr&&Targetinstrument->instrumentSound!=nullptr)
 			{	
 				SoundPlayer = UGameplayStatics::CreateSound2D(GetWorld(), Targetinstrument->instrumentSound);
+				Chat_UI->text_sound->SetVisibility(ESlateVisibility::Visible);
+				Chat_UI->text_sound->SetText(FText::FromString(FText::AsNumber(Targetinstrument->id).ToString()+FString("Playing..")));
+
 			}
 			else
 			{
 				SoundPlayer = UGameplayStatics::CreateSound2D(GetWorld(), BGSound);
+				Chat_UI->text_sound->SetVisibility(ESlateVisibility::Hidden);
 			}
 			SoundPlayer->Play();
 			StartSound();

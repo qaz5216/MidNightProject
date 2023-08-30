@@ -25,6 +25,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = info)
 	class UTextBlock* text_waiting;
-
+	
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = info)
+	class UTextBlock* text_sound;
 	
 };
