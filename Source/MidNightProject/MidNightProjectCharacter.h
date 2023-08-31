@@ -134,5 +134,8 @@ public:
 
    FString serverurl = "http://192.168.1.14:8000";
 
+   UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="info")
+   class UAudioComponent* audiocomp;
+
 };
 

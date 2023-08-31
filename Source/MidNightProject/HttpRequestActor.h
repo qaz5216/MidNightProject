@@ -29,6 +29,10 @@ public:
 	
 	void OnPostData(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
 
+	void OnPostVoiceData(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+
+	void PlayPCMData(const TArray<int8>& PCMData);
+
 	class Ainstrument* instrument;
 	class AMidNightProjectCharacter* player;
 };
