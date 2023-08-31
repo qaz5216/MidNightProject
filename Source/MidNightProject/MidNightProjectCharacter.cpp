@@ -13,6 +13,8 @@
 #include <Components/AudioComponent.h>
 #include <Kismet/GameplayStatics.h>
 #include "HttpRequestActor.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundWaveProcedural.h"
 #include "Components/EditableText.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,7 +42,9 @@ AMidNightProjectCharacter::AMidNightProjectCharacter()
 	Mesh1P->CastShadow = false;
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
-
+	
+	//audiocomp = UGameplayStatics::CreateSound2D(GetWorld(), nullptr);
+	audiocomp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
 }
 
 void AMidNightProjectCharacter::BeginPlay()
@@ -65,6 +69,11 @@ void AMidNightProjectCharacter::BeginPlay()
 	}
 	instrument = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, Ainstrument::StaticClass()));
 	httpReqActor = Cast<AHttpRequestActor>(UGameplayStatics::GetActorOfClass(this, AHttpRequestActor::StaticClass()));
+	FString saveURL = FPaths::ProjectPersistentDownloadDir() + FString("/test.wav");
+	USoundWave* myWavSound = LoadObject<USoundWave>(nullptr, *saveURL);
+
+	audiocomp->SetSound(myWavSound);
+
 }
 
 void AMidNightProjectCharacter::Tick(float DeltaSeconds)
@@ -233,17 +242,17 @@ void AMidNightProjectCharacter::Enter()
 		APlayerController* PlayerC = Cast<APlayerController>(Controller);
 		GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Yellow, FString::Printf(TEXT("else")));
 		if (PlayerC != nullptr && httpReqActor)
-		{
+		{ 
 			GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Yellow, FString::Printf(TEXT("Inif")));
 			PlayerC->SetInputMode(FInputModeGameAndUI());
 			PlayerC->SetShowMouseCursor(false);
 			bSearching = false;
 
-			FString fullPath = serverurl + "/answer" + "?id=" + FText::AsNumber(instrument->id).ToString() + "&content=" + Chat_UI->Etext_Q->GetText().ToString();
-
-			
-			Chat_UI->text_waiting->SetVisibility(ESlateVisibility::Visible);
+			//FString fullPath = serverurl + "/answer_2" + "?id=" + FText::AsNumber(instrument->id).ToString() + "&content=" + Chat_UI->Etext_Q->GetText().ToString();
+			FString fullPath = serverurl + "/answer";
+			/*FString fullPath = serverurl + "/send_sound" + "?id=" + FText::AsNumber(instrument->id).ToString() + "&content=" + Chat_UI->Etext_Q->GetText().ToString();*/
 			httpReqActor->PostRequset(fullPath);
+			Chat_UI->text_waiting->SetVisibility(ESlateVisibility::Visible);
 
 		}
 	}
@@ -263,7 +272,7 @@ void AMidNightProjectCharacter::StopSound()
 
 void AMidNightProjectCharacter::VolumeSound(float Value)
 {
-	SoundPlayer->SetVolumeMultiplier(Value);
+	SoundPlayer->SetVolumeMultiplier(0);
 }
 
 void AMidNightProjectCharacter::Move(const FInputActionValue& Value)

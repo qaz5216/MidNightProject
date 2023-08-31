@@ -20,5 +20,9 @@ public:
 
 	//json ¸¸µé±â
 	static FString MakeJson(const TMap<FString, FString> source);
-	
+
+	static void PlayPCMData(const TArray<uint8>& PCMData ,class AMidNightProjectCharacter* player );
+
+	UPROPERTY()
+	class URuntimeAudioImporterLibrary* RuntimeAudioImporter;
 };

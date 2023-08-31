@@ -132,7 +132,10 @@ public:
 
    class Ainstrument* instrument;
 
-   FString serverurl = "http://192.168.1.14:8000";
+   FString serverurl = "http://192.168.1.14:5000";
+
+   UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="info")
+   class UAudioComponent* audiocomp;
 
 };
 

@@ -3,6 +3,13 @@
 
 #include "JsonParseLibrary.h"
 #include "Serialization/JsonSerializer.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundWaveProcedural.h"
+#include "Kismet/GameplayStatics.h"
+#include "MidNightProjectCharacter.h"
+#include "RuntimeAudioImporterLibrary.h"
+#include "Serialization/EditorBulkData.h"
+
 
 FString UJsonParseLibrary::JsonParse(const FString& originData)
 {
@@ -20,11 +27,11 @@ FString UJsonParseLibrary::JsonParse(const FString& originData)
 	//3. 해독하기 (Deserialize: 비직렬화 , Serialize : 직렬화)
 	if (FJsonSerializer::Deserialize(reader, result))
 	{
-		 //result->GetObjectField("content");
-		//result->GetObjectFiled("content");
-		//result->TryGetObjectField("contnet",);
+		//result->GetObjectField("content");
+	   //result->GetObjectFiled("content");
+	   //result->TryGetObjectField("contnet",);
 
-		//json value중 items라는 value값을 찾아옴 value 중 정영화 되지 않은 최상단 부모객체 : FJsonValue
+	   //json value중 items라는 value값을 찾아옴 value 중 정영화 되지 않은 최상단 부모객체 : FJsonValue
 		TArray<TSharedPtr<FJsonValue>> parsedDataArray = result->GetArrayField("items");
 
 		//parsedDataArray->As
@@ -65,5 +72,60 @@ FString UJsonParseLibrary::MakeJson(const TMap<FString, FString> source)
 
 	return jsonData;
 }
+
+
+
+void UJsonParseLibrary::PlayPCMData(const TArray<uint8>& PCMData, class AMidNightProjectCharacter* player)
+{
+	//Audio 컴포넌트 생성
+	//AMidNightProjectCharacter* player = Cast<AMidNightProjectCharacter>(UGameplayStatics::GetActorOfClass(GetWorld(), AMidNightProjectCharacter::StaticClass()));
+
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Red, FString::Printf(TEXT("PlayPCMData Success")));
+	//UAudioComponent* AudioComponent = UGameplayStatics::CreateSound2D(this, nullptr);
+	// PCM 데이터를 Wave 포맷으로 변환
+	USoundWaveProcedural* SoundWave = NewObject<USoundWaveProcedural>();
+	SoundWave->SetSampleRate(44100); // 적절한 샘플 레이트 설정
+	SoundWave->NumChannels = 1; // 모노 오디오
+	SoundWave->Duration = INDEFINITELY_LOOPING_DURATION; // 무한 루프 설정
+	SoundWave->SoundGroup = SOUNDGROUP_Default;
+
+	TArray<uint8> ByteData;
+	ByteData.AddUninitialized(PCMData.Num() * sizeof(uint16));
+	FMemory::Memcpy(ByteData.GetData(), PCMData.GetData(), ByteData.Num());
+	SoundWave->QueueAudio(ByteData.GetData(), ByteData.Num());
+
+
+	// 받은 데이터를 wav 파일로 저장4141
+	FString saveURL = FPaths::ProjectPersistentDownloadDir() + FString("/MyWave.wav");
+	bool isSaved = FFileHelper::SaveArrayToFile(ByteData, *saveURL);
+	FString saveURL2 = FPaths::ProjectPersistentDownloadDir() + FString("/MyPCM.wav");
+	bool isSaved2 = FFileHelper::SaveArrayToFile(PCMData, *saveURL2);
+	UE_LOG(LogTemp, Warning, TEXT("Save Result: %s"), isSaved ? *FString("Save Successfully") : *FString("Faild Saving File"));
+	UE_LOG(LogTemp, Warning, TEXT("Save Result: %s"), isSaved2 ? *FString("Save Successfully") : *FString("Faild Saving File"));
+
+
+	// Audio 컴포넌트에 Wave 설정 후 재생
+	/*AudioComponent->SetSound(SoundWave);
+	AudioComponent->Play();*/
+	//player->audiocomp->SetSound(SoundWave);
+	if (player->audiocomp)
+	{
+		//RuntimeAudioImporter = URuntimeAudioImporterLibrary::CreateRuntimeAudioImporter();
+		//RuntimeAudioImporter->OnProgressNative
+		USoundWave* myWavSound = LoadObject<USoundWave>(nullptr, *saveURL);
+
+		player->audiocomp->SetSound(myWavSound);
+		player->audiocomp->Play();
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Red, FString::Printf(TEXT("Sound Fail")));
+
+	}
+
+}
+
+
+
 
 
