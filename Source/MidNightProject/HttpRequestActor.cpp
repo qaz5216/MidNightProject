@@ -65,7 +65,7 @@ void AHttpRequestActor::PostRequset(const FString url)
 	FFileHelper::LoadFileToArray(myVoiceRaw, *filePath);
 	req->SetContent(myVoiceRaw);*/
 	req->SetContentAsString(chatJsonData);
-	req->OnProcessRequestComplete().BindUObject(this, &AHttpRequestActor::OnPostVoiceData);
+	req->OnProcessRequestComplete().BindUObject(this, &AHttpRequestActor::OnPostData);
 	//req->OnProcessRequestComplete().BindUObject(this, &AHttpRequestActor::OnPostData);
 	req->ProcessRequest();
 }

@@ -69,6 +69,11 @@ void AMidNightProjectCharacter::BeginPlay()
 	}
 	instrument = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, Ainstrument::StaticClass()));
 	httpReqActor = Cast<AHttpRequestActor>(UGameplayStatics::GetActorOfClass(this, AHttpRequestActor::StaticClass()));
+	FString saveURL = FPaths::ProjectPersistentDownloadDir() + FString("/test.wav");
+	USoundWave* myWavSound = LoadObject<USoundWave>(nullptr, *saveURL);
+
+	audiocomp->SetSound(myWavSound);
+
 }
 
 void AMidNightProjectCharacter::Tick(float DeltaSeconds)
@@ -244,10 +249,8 @@ void AMidNightProjectCharacter::Enter()
 			bSearching = false;
 
 			//FString fullPath = serverurl + "/answer_2" + "?id=" + FText::AsNumber(instrument->id).ToString() + "&content=" + Chat_UI->Etext_Q->GetText().ToString();
-			FString fullPath = serverurl + "/send_sound" + "?id=" + FText::AsNumber(instrument->id).ToString() + "&content=" + Chat_UI->Etext_Q->GetText().ToString();
+			FString fullPath = serverurl + "/answer";
 			/*FString fullPath = serverurl + "/send_sound" + "?id=" + FText::AsNumber(instrument->id).ToString() + "&content=" + Chat_UI->Etext_Q->GetText().ToString();*/
-
-			
 			httpReqActor->PostRequset(fullPath);
 			Chat_UI->text_waiting->SetVisibility(ESlateVisibility::Visible);
 

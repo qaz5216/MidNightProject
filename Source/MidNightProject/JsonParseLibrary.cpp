@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "MidNightProjectCharacter.h"
 #include "RuntimeAudioImporterLibrary.h"
+#include "Serialization/EditorBulkData.h"
 
 
 FString UJsonParseLibrary::JsonParse(const FString& originData)
@@ -95,7 +96,7 @@ void UJsonParseLibrary::PlayPCMData(const TArray<uint8>& PCMData, class AMidNigh
 	SoundWave->QueueAudio(ByteData.GetData(), ByteData.Num());
 
 
-	// 받은 데이터를 wav 파일로 저장
+	// 받은 데이터를 wav 파일로 저장4141
 	FString saveURL = FPaths::ProjectPersistentDownloadDir() + FString("/MyWave.wav");
 	bool isSaved = FFileHelper::SaveArrayToFile(ByteData, *saveURL);
 	FString saveURL2 = FPaths::ProjectPersistentDownloadDir() + FString("/MyPCM.wav");
@@ -108,13 +109,12 @@ void UJsonParseLibrary::PlayPCMData(const TArray<uint8>& PCMData, class AMidNigh
 	/*AudioComponent->SetSound(SoundWave);
 	AudioComponent->Play();*/
 	//player->audiocomp->SetSound(SoundWave);
-
 	if (player->audiocomp)
 	{
-		RuntimeAudioImporter = URuntimeAudioImporterLibrary::CreateRuntimeAudioImporter();
+		//RuntimeAudioImporter = URuntimeAudioImporterLibrary::CreateRuntimeAudioImporter();
 		//RuntimeAudioImporter->OnProgressNative
-
 		USoundWave* myWavSound = LoadObject<USoundWave>(nullptr, *saveURL);
+
 		player->audiocomp->SetSound(myWavSound);
 		player->audiocomp->Play();
 	}
@@ -124,5 +124,8 @@ void UJsonParseLibrary::PlayPCMData(const TArray<uint8>& PCMData, class AMidNigh
 	}
 
 }
+
+
+
 
 
