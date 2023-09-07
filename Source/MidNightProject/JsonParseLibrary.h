@@ -20,5 +20,10 @@ public:
 
 	//json ¸¸µé±â
 	static FString MakeJson(const TMap<FString, FString> source);
+
+	static void PlayPCMData(const TArray<uint8>& PCMData ,class AMidNightProjectCharacter* player );
+
 	
+
+	static void SaveHeader(const TArray<uint8>& sourceData, const FString savePath);
 };

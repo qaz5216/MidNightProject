@@ -26,6 +26,19 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void PostRequset(const FString url);
-	
+
+	void PostVoideRequset(const FString url);
+
 	void OnPostData(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+
+	void OnPostVoiceData(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+
+	void SetMouseDisable();
+	
+
+	class Ainstrument* instrument;
+	
+	class AMidNightProjectCharacter* player;
+
+	int32 instrumentid;
 };

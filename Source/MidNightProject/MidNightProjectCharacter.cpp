@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MidNightProjectCharacter.h"
 #include "MidNightProjectProjectile.h"
@@ -10,7 +10,12 @@
 #include "instrument.h"
 #include "ChatWidget.h"
 #include <UMG/Public/Components/TextBlock.h>
-
+#include <Components/AudioComponent.h>
+#include <Kismet/GameplayStatics.h>
+#include "HttpRequestActor.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundWaveProcedural.h"
+#include "Components/EditableText.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AMidNightProjectCharacter
@@ -37,14 +42,15 @@ AMidNightProjectCharacter::AMidNightProjectCharacter()
 	Mesh1P->CastShadow = false;
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
-
+	
+	//audiocomp = UGameplayStatics::CreateSound2D(GetWorld(), nullptr);
+	audiocomp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
 }
 
 void AMidNightProjectCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -53,6 +59,21 @@ void AMidNightProjectCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	bSoundkill=false;
+	bSoundMake=false;
+	if (BGSound!=nullptr)
+	{
+		SoundPlayer = UGameplayStatics::CreateSound2D(GetWorld(), BGSound);
+		bBackSound=true;
+		SoundPlayer->Play();
+		StartSound();
+	}
+	instrument = Cast<Ainstrument>(UGameplayStatics::GetActorOfClass(this, Ainstrument::StaticClass()));
+	httpReqActor = Cast<AHttpRequestActor>(UGameplayStatics::GetActorOfClass(this, AHttpRequestActor::StaticClass()));
+	FString saveURL = FPaths::ProjectPersistentDownloadDir() + FString("/test.wav");
+	USoundWave* myWavSound = LoadObject<USoundWave>(nullptr, *saveURL);
+
+	audiocomp->SetSound(myWavSound);
 
 }
 
@@ -62,32 +83,132 @@ void AMidNightProjectCharacter::Tick(float DeltaSeconds)
 	FHitResult HitResult;
 	FVector StartV=FirstPersonCameraComponent->GetComponentLocation();
 	FVector EndV = StartV+(FirstPersonCameraComponent->GetForwardVector()*1000);
-
-	if (GetWorld()->LineTraceSingleByChannel(HitResult,StartV,EndV,ECollisionChannel::ECC_Visibility))
+	if (bBackSound)
 	{
-		AActor* HitActor=HitResult.GetActor();
-		Ainstrument* Hitinstrument=Cast<Ainstrument>(HitActor);
-		if (Hitinstrument!=nullptr)
+		BGSoundIndex+=DeltaSeconds;
+		if (BGSoundIndex>175)
 		{
-			if (Targetinstrument!=Hitinstrument)
+			BGSoundIndex=0;
+		}
+	}
+	if (!bSearching)
+	{
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, StartV, EndV, ECollisionChannel::ECC_Visibility))
+		{
+			AActor* HitActor = HitResult.GetActor();
+			Ainstrument* Hitinstrument = Cast<Ainstrument>(HitActor);
+			if (Hitinstrument != nullptr)
 			{
-				bUishow = false;
-				DetachUI();
-				Targetinstrument=Hitinstrument;
+				Hitinstrument->FixRot();
+
+				httpReqActor->instrumentid = Hitinstrument->id;
+				if (Targetinstrument != Hitinstrument)
+				{
+					bUishow = false;
+					DetachUI();
+					Targetinstrument = Hitinstrument;
+				}
+				if (!bUishow)
+				{
+					bUishow = true;
+					AttachUI();
+				}
+				if (!bSoundkill && !bSoundMake)
+				{
+					StopSound();
+				}
 			}
-			if (!bUishow)
+			else
 			{
-				bUishow = true;
-				AttachUI();
-				UE_LOG(LogTemp, Warning, TEXT("Id=%d"), Hitinstrument->id);
-				UE_LOG(LogTemp, Warning, TEXT("%s"), *Hitinstrument->infoString);
+				if (bBackSound)
+				{
+
+				}
+				else
+				{
+					Targetinstrument = nullptr;
+					bUishow = false;
+					DetachUI();
+					if (!bSoundkill && !bSoundMake)
+					{
+						StopSound();
+					}
+				}
+
 			}
 		}
 		else
 		{
-			Targetinstrument=nullptr;
-			bUishow=false;
-			DetachUI();
+			if (bBackSound)
+			{
+			}
+			else
+			{
+				Targetinstrument = nullptr;
+				bUishow = false;
+				DetachUI();
+				if (!bSoundkill && !bSoundMake)
+				{
+					StopSound();
+				}
+			}
+		}
+	}
+	
+	if (bSoundkill)
+	{
+		SoundKillTime+=DeltaSeconds;
+		if (SoundKillTime>2)
+		{
+			VolumeSound(0);
+			bSoundkill=false;
+			SoundKillTime=0;
+		/*	if (bBackSound)
+			{
+				BGSoundIndex=SoundPlayer->GetAudioTime();
+			}*/
+			SoundPlayer->Stop();
+			if (Targetinstrument!=nullptr&&Targetinstrument->instrumentSound!=nullptr)
+			{	
+				bBackSound=false;
+				SoundPlayer = UGameplayStatics::CreateSound2D(GetWorld(), Targetinstrument->instrumentSound);
+				Chat_UI->text_sound->SetVisibility(ESlateVisibility::Visible);
+				Chat_UI->text_sound->SetText(FText::FromString(Targetinstrument->infoString+TEXT(" ì†Œë¦¬ê°€ ìž¬ìƒì¤‘ ìž…ë‹ˆë‹¤.")));
+				SoundPlayer->Play();
+			}
+			else
+			{
+				SoundPlayer = UGameplayStatics::CreateSound2D(GetWorld(), BGSound);
+				bBackSound=true;
+				if (Chat_UI!=nullptr)
+				{
+					Chat_UI->text_sound->SetVisibility(ESlateVisibility::Hidden);
+				}
+				SoundPlayer->Play(BGSoundIndex);
+			}
+			StartSound();
+		}
+		else
+		{
+			VolumeSound(1 - (SoundKillTime / 2));
+		}
+	}
+	if (bSoundMake)
+	{
+		SoundMakeTime+=DeltaSeconds;
+		if (SoundMakeTime<2)
+		{
+			VolumeSound((SoundMakeTime / 2));
+		}
+		else
+		{
+			VolumeSound(1);
+		}
+		if (SoundMakeTime>2)
+		{
+			VolumeSound(1);
+			bSoundMake=false;
+			SoundMakeTime=0;
 		}
 	}
 }
@@ -122,18 +243,15 @@ void AMidNightProjectCharacter::AttachUI()
 		Chat_UI = CreateWidget<UChatWidget>(GetWorld(), Chat_Widget);
 		if (Chat_UI!=nullptr)
 		{
-			Chat_UI->text_id->SetText(FText::AsNumber(Targetinstrument->id));
+			Chat_UI->text_Answer->SetVisibility(ESlateVisibility::Hidden);
 			Chat_UI->AddToViewport();
-			UE_LOG(LogTemp, Warning, TEXT("UIAttach"));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("UINullzz"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WidgetNullzz"));
 	}
 }
 
@@ -149,11 +267,9 @@ void AMidNightProjectCharacter::DetachUI()
 			PlayerC->SetShowMouseCursor(false);
 			bSearching = false;
 		}
-		UE_LOG(LogTemp, Warning, TEXT("UIDetach"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UINullzzdetach"));
 	}
 }
 
@@ -171,17 +287,40 @@ void AMidNightProjectCharacter::Enter()
 	}
 	else
 	{
-		//¼­¹ö¿¡ edit_text¿¡ ÀÖ´Â ÅØ½ºÆ®¸¦ º¸³½´Ù.
+		//ì„œë²„ì— edit_textì— ìžˆëŠ” í…ìŠ¤íŠ¸ë¥¼ ë³´ë‚¸ë‹¤.
+		//Chat_UI->text_edit->
 		APlayerController* PlayerC = Cast<APlayerController>(Controller);
-		if (PlayerC != nullptr)
-		{
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Yellow, FString::Printf(TEXT("hi")));
+		if (PlayerC != nullptr && httpReqActor)
+		{ 
 			
+			//GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Yellow, FString::Printf(TEXT("nullzz")));
 			PlayerC->SetInputMode(FInputModeGameAndUI());
-			PlayerC->SetShowMouseCursor(false);
-			bSearching = false;
+
+			FString fullPath1 = serverurl1 + "/send_sound";
+			FString fullPath2 = serverurl2 + "/answer";
+
+			httpReqActor->PostVoideRequset(fullPath1);
+			httpReqActor->PostRequset(fullPath2);
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Enter"));
+}
+
+void AMidNightProjectCharacter::StartSound()
+{
+	SoundMakeTime=0;
+	bSoundMake = true;
+}
+
+void AMidNightProjectCharacter::StopSound()
+{
+	SoundKillTime=0;
+	bSoundkill=true;
+}
+
+void AMidNightProjectCharacter::VolumeSound(float Value)
+{
+	SoundPlayer->SetVolumeMultiplier(Value);
 }
 
 void AMidNightProjectCharacter::Move(const FInputActionValue& Value)

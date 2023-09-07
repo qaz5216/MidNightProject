@@ -13,9 +13,19 @@ UCLASS()
 class MIDNIGHTPROJECT_API UChatWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+
 public:
+
+	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = info)
-	class UTextBlock* text_id;
+	class UEditableText* Etext_Q;
+	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = info)
 	class UTextBlock* text_Answer;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = info)
+	class UTextBlock* text_sound;
+	
+
 };

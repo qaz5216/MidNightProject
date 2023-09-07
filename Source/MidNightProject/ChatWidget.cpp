@@ -2,4 +2,4 @@
 
 
 #include "ChatWidget.h"
-
+#include <UMG/Public/Components/TextBlock.h>

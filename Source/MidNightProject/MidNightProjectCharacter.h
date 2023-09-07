@@ -108,7 +108,41 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Enter();
-
+	UFUNCTION(BlueprintCallable)
+	void StartSound();
+	UFUNCTION(BlueprintCallable)
+	void StopSound();
 	
+	UFUNCTION(BlueprintCallable)
+	void VolumeSound(float Value);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
+	USoundBase* BGSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
+	UAudioComponent* SoundPlayer;
+	
+	float BGSoundIndex=0;
+
+	void OnAudioPlaybackPercent(const USoundWave* PlayingSoundWave, const float PlaybackPercent);
+
+	float SoundMakeTime=0;
+	float SoundKillTime=0;
+	float SoundVolume=0;
+	bool bSoundkill=false;
+	bool bSoundMake=false;
+	bool bBackSound=true;
+	bool bJillmoon = false;
+	UPROPERTY()
+   class AHttpRequestActor* httpReqActor;
+
+   class Ainstrument* instrument;
+
+   FString serverurl1 = "http://192.168.1.14:5000";
+   FString serverurl2 = "http://192.168.1.14:5001";
+
+   UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="info")
+   class UAudioComponent* audiocomp;
+
 };
 

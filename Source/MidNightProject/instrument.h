@@ -30,10 +30,28 @@ public:
 	FString infoString="";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
-	class UStaticMeshComponent* instrumentMeshComp;
+	UStaticMeshComponent* MeshComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
-	class USoundBase* instrumentSound;
+	USoundBase* instrumentSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
+	bool bRotYaw=true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
+	bool bRot=false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
+	bool bNoRot=false;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=info)
+	FRotator StartRot;
+
+	float plusRot=0;
+
+	UFUNCTION()
+	void FixRot();
 
 
 };
